@@ -6,15 +6,17 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    // Get all posts
-    const { data, error } = await supabase.from('posts').select('*');
+    // Get all profiles
+    const { data, error } = await supabase.from('users').select('*');
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ data });
   }
   if (req.method === 'POST') {
-    // Create a new post
-    const { user_email, content, image_url } = req.body;
-    const { data, error } = await supabase.from('posts').insert([{ user_email, content, image_url }]);
+    // Upsert user profile
+    const { email, name, company, facebook_token, instagram_token, linkedin_token } = req.body;
+    const { data, error } = await supabase.from('users').upsert([
+      { email, name, company, facebook_token, instagram_token, linkedin_token }
+    ], { onConflict: ['email'] });
     if (error) return res.status(500).json({ error: error.message });
     return res.status(201).json({ data });
   }
